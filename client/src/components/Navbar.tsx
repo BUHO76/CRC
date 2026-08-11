@@ -1,25 +1,37 @@
+import { useState } from 'react';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import AppBar from '@mui/material/AppBar';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useColorMode } from '../theme/ColorModeProvider';
 
 const NAV_LINKS = [
   { path: '/reserve', labelKey: 'nav.reserve' },
   { path: '/reservations', labelKey: 'nav.reservations' },
-  { path: '/admin/rooms', labelKey: 'nav.admin' },
 ] as const;
 
 export function Navbar() {
   const { t, i18n } = useTranslation();
   const location = useLocation();
+  const navigate = useNavigate();
   const { mode, toggleColorMode } = useColorMode();
+  const [roleMenuAnchor, setRoleMenuAnchor] = useState<HTMLElement | null>(null);
+
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
+  const handleRoleSelect = (path: string) => {
+    setRoleMenuAnchor(null);
+    navigate(path);
+  };
 
   return (
     <AppBar position="static" color="primary" enableColorOnDark>
@@ -45,6 +57,27 @@ export function Navbar() {
               {t(link.labelKey)}
             </Button>
           ))}
+
+          <Button
+            color="inherit"
+            variant={isAdminRoute ? 'outlined' : 'text'}
+            endIcon={<ArrowDropDownIcon />}
+            onClick={(e) => setRoleMenuAnchor(e.currentTarget)}
+          >
+            {isAdminRoute ? t('nav.admin') : t('nav.user')}
+          </Button>
+          <Menu
+            anchorEl={roleMenuAnchor}
+            open={Boolean(roleMenuAnchor)}
+            onClose={() => setRoleMenuAnchor(null)}
+          >
+            <MenuItem selected={isAdminRoute} onClick={() => handleRoleSelect('/admin/rooms')}>
+              {t('nav.admin')}
+            </MenuItem>
+            <MenuItem selected={!isAdminRoute} onClick={() => handleRoleSelect('/reserve')}>
+              {t('nav.user')}
+            </MenuItem>
+          </Menu>
         </Stack>
 
         <Stack direction="row" spacing={1} alignItems="center">

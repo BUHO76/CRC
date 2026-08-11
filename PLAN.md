@@ -204,9 +204,16 @@ CRC/
 - [ ] Backend unit + integration tests
 - [ ] Frontend component tests
 - [ ] Manual pass: overlap edge cases (adjacent times, same start/end) and operating-hours edge cases (starts before 09:00, ends after 17:00, exactly 09:00–17:00)
-- [ ] README updated with setup + run instructions
+- [x] README updated with setup + run instructions — `README.md` (English) + `README.es.md` (Spanish), tech stack, business rules, Docker quick-start, local-dev path, API table
+- [x] Dockerized (pulled forward, requested mid-Phase-5):
+  - `server/Dockerfile` — multi-stage: build on `node:20` (glibc — esbuild's native binary is flaky on Alpine at build time), ship on `node:20-alpine` with prod-only deps + the bundled `dist/index.js`
+  - `client/Dockerfile` — multi-stage: `node:20` build (Vite), served from `nginx:alpine` with SPA fallback routing (`client/nginx.conf`) so client-side routes survive a refresh
+  - `docker-compose.yml` — `mongo` (healthcheck-gated so `server` doesn't race a not-yet-ready DB), `server`, `client`; `mongo-data` named volume for persistence across restarts
+  - Both Dockerfiles use build context `.` (repo root) since they need the sibling `/shared` directory — documented inline
+  - `.dockerignore` (root — the only one Docker actually reads, given the root build context)
 - [x] UI polish pass (pulled forward, requested mid-Phase-3 testing):
   - Navbar (`components/Navbar.tsx`) — real nav links (Reserve/Reservations/Admin) with active-route highlighting, replacing the title-only Phase-0 AppBar
   - Dark mode — `theme/ColorModeProvider.tsx` (light/dark palettes, localStorage-persisted, defaults to OS `prefers-color-scheme`), toggle in the navbar. Also added a `color-scheme` meta tag to `index.html` — the likely real fix for the reported modal-contrast issue, since browsers auto-invert colors on pages that don't declare dark-mode support
   - Desktop-forced date/time pickers (`DesktopDatePicker`/`DesktopTimePicker`) — the responsive pickers were silently falling back to the read-only Mobile variant, which doesn't accept keyboard input
   - `components/PageContainer.tsx` — shared layout wrapper (consistent padding, optional vertical centering) applied to all four pages
+  - Navbar's static "Admin" link replaced with an Admin/User role-switcher dropdown (`MenuItem` → `/admin/rooms` or `/reserve`), label reflects the current route

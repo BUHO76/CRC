@@ -10,7 +10,8 @@
   "nav": {
     "reserve": "Reserve",
     "reservations": "Reservations",
-    "admin": "Admin"
+    "admin": "Admin",
+    "user": "User"
   },
   "landing": {
     "title": "Conference Room Reservations",

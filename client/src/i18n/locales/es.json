@@ -10,7 +10,8 @@
   "nav": {
     "reserve": "Reservar",
     "reservations": "Reservas",
-    "admin": "Administrador"
+    "admin": "Administrador",
+    "user": "Usuario"
   },
   "landing": {
     "title": "Reservas de Salas de Conferencia",
