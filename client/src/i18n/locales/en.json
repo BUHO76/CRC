@@ -1,0 +1,16 @@
+{
+  "app": {
+    "title": "Conference Room Reservations"
+  },
+  "nav": {
+    "reserve": "Reserve",
+    "reservations": "Reservations",
+    "admin": "Admin"
+  },
+  "landing": {
+    "title": "Conference Room Reservations",
+    "subtitle": "How would you like to continue?",
+    "admin": "Continue as Admin",
+    "user": "Continue as User"
+  }
+}
