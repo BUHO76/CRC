@@ -3,11 +3,14 @@ import type { TFunction } from 'i18next';
 
 export function getApiErrorMessage(error: unknown, t: TFunction): string {
   if (axios.isAxiosError(error)) {
-    const status = error.response?.status;
-    if (status === 409) {
+    const code = error.response?.data?.code;
+    if (code === 'OVERLAP') {
+      return t('errors.reservationOverlap');
+    }
+    if (code === 'DUPLICATE') {
       return t('errors.conflict');
     }
-    if (status === 404) {
+    if (code === 'NOT_FOUND') {
       return t('errors.notFound');
     }
   }

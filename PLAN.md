@@ -45,6 +45,8 @@ All decisions are now settled — no open items remain.
 - The installed TypeScript (v7) removed `baseUrl` and the `node10` moduleResolution mode — server `tsconfig.json` uses `module`/`moduleResolution: "node16"` and path-relative `paths` instead.
 - `ts-node-dev` crashes against this TypeScript version (its internal ts-node config API changed underneath it). Swapped the server's `dev` script to **tsx** (`tsx watch src/index.ts`) — esbuild-based, no ts-node dependency, more resilient to TS version bumps.
 - Local MongoDB installed via Homebrew: `brew tap mongodb/brew && brew install mongodb-community`, running as a service (`brew services start mongodb/brew/mongodb-community`).
+- **i18n pattern for validation (set in Phase 1, reuse in Phase 2):** shared Zod schemas (`/shared/schemas/*.ts`) stay message-agnostic — no hardcoded English strings. The frontend maps a failed field (`issue.path[0]`) to a translation key itself (see `client/src/features/rooms/validation.ts` + `validation.room.*` keys in `en.json`/`es.json`). Same approach: backend error responses carry a machine-readable `code` (`VALIDATION_ERROR`/`DUPLICATE`/`API_ERROR`/`INTERNAL_ERROR`) and status code; the frontend never renders raw backend message text, it maps status/code to a translated string (`client/src/lib/errorMessage.ts`).
+- `/shared` has its own minimal `package.json` (with `zod` as a dependency) so `import { z } from 'zod'` resolves correctly from files under `/shared` regardless of which workspace (client or server) is loading them.
 - **Docker is planned for later** (the app will be run by other people). This shaped the server build: `npm run build` bundles `src/index.ts` with **esbuild** into a single `dist/index.js` (inlining the `@shared` schema imports), instead of plain `tsc` emit. Plain `tsc` doesn't rewrite `@shared/*` path aliases in its output, and even if it did, the compiled server would still depend on `/shared` existing as a sibling directory at the right relative path inside the image. The esbuild bundle has no such dependency — a future Dockerfile just needs `COPY dist/index.js` + `node_modules` (kept external via `--packages=external`) + `node dist/index.js`. `tsc --noEmit` (via `npm run typecheck`) still runs as part of `npm run build` for type safety; it just doesn't emit.
 
 ## 4. Data Models
@@ -179,12 +181,13 @@ CRC/
 - [x] Admin room management page (list/create/edit/delete) — MUI table + form dialog + confirm dialog, wired to the API, i18n'd (EN/ES); minimal router added (`/`, `/admin/rooms`, `/reserve` + `/reservations` as Phase-3 placeholders)
 
 ### Phase 2 — Reservations core
-- [ ] Reservation model (Mongoose)
-- [ ] Zod schema enforcing 09:00–17:00 operating hours + `endTime > startTime`
-- [ ] Overlap-check utility (shared logic, unit tested first)
-- [ ] `POST /api/reservations` with backend overlap + operating-hours enforcement
-- [ ] `GET /api/reservations` filter by room number + date
-- [ ] `DELETE /api/reservations/:id`
+- [x] Reservation model (Mongoose) — `server/src/models/Reservation.ts`, compound index on `{roomNumber, date}`
+- [x] Zod schema enforcing 09:00–17:00 operating hours + `endTime > startTime` — `shared/schemas/reservation.schema.ts` (message-agnostic, translated keys in `en.json`/`es.json` under `validation.reservation.*`)
+- [x] Overlap-check utility (shared logic, unit tested first) — `shared/utils/overlap.ts` + `overlap.test.ts` (vitest, added as a `shared` devDependency)
+- [x] `POST /api/reservations` with backend overlap + operating-hours enforcement — throws `ApiError(409, ..., 'OVERLAP')` on conflict, distinct from room `DUPLICATE` (both 409); `ApiError` now carries a `code`
+- [x] `GET /api/reservations` filter by room number + date (both optional)
+- [x] `DELETE /api/reservations/:id`
+- [x] Seed data for reservations — `server/src/seed/reservations.seed.ts`, 5 sample bookings across the seeded rooms, auto-seeded on startup alongside rooms
 
 ### Phase 3 — Frontend flows
 - [ ] Landing / role picker page

@@ -31,12 +31,20 @@
     "room": {
       "numberRequired": "El número de sala es obligatorio",
       "capacityInvalid": "La capacidad debe ser un número entero positivo"
+    },
+    "reservation": {
+      "roomNumberRequired": "Selecciona una sala",
+      "reservedByRequired": "Tu nombre es obligatorio",
+      "dateInvalid": "Selecciona una fecha válida",
+      "startTimeInvalid": "La hora de inicio debe estar entre las 09:00 y las 17:00",
+      "endTimeInvalid": "La hora de fin debe estar entre las 09:00 y las 17:00, y después de la hora de inicio"
     }
   },
   "errors": {
     "generic": "Algo salió mal. Inténtalo de nuevo.",
     "conflict": "Ya existe una sala con ese número.",
-    "notFound": "Ese elemento ya no existe."
+    "notFound": "Ese elemento ya no existe.",
+    "reservationOverlap": "Esta sala ya está reservada en ese horario. Elige otro horario u otra sala."
   },
   "comingSoon": {
     "title": "Próximamente",

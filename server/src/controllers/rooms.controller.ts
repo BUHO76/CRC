@@ -30,7 +30,7 @@ export async function updateRoom(req: Request, res: Response, next: NextFunction
       runValidators: true,
     });
     if (!room) {
-      throw new ApiError(404, 'Room not found');
+      throw new ApiError(404, 'Room not found', 'NOT_FOUND');
     }
     res.json(room);
   } catch (err) {
@@ -42,7 +42,7 @@ export async function deleteRoom(req: Request, res: Response, next: NextFunction
   try {
     const room = await Room.findByIdAndDelete(req.params.id);
     if (!room) {
-      throw new ApiError(404, 'Room not found');
+      throw new ApiError(404, 'Room not found', 'NOT_FOUND');
     }
     res.status(204).send();
   } catch (err) {

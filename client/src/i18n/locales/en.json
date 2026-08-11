@@ -31,12 +31,20 @@
     "room": {
       "numberRequired": "Room number is required",
       "capacityInvalid": "Capacity must be a positive whole number"
+    },
+    "reservation": {
+      "roomNumberRequired": "Please select a room",
+      "reservedByRequired": "Your name is required",
+      "dateInvalid": "Please select a valid date",
+      "startTimeInvalid": "Start time must be between 09:00 and 17:00",
+      "endTimeInvalid": "End time must be between 09:00 and 17:00, and after the start time"
     }
   },
   "errors": {
     "generic": "Something went wrong. Please try again.",
     "conflict": "A room with that number already exists.",
-    "notFound": "That item no longer exists."
+    "notFound": "That item no longer exists.",
+    "reservationOverlap": "This room is already booked for that time. Please choose another time or room."
   },
   "comingSoon": {
     "title": "Coming soon",
