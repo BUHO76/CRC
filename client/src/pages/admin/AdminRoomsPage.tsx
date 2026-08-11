@@ -4,7 +4,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Container from '@mui/material/Container';
 import IconButton from '@mui/material/IconButton';
 import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
@@ -18,6 +17,7 @@ import { useTranslation } from 'react-i18next';
 import type { Room, RoomInput } from '@shared/schemas/room.schema';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { useErrorModal } from '../../components/ErrorModalProvider';
+import { PageContainer } from '../../components/PageContainer';
 import { createRoomRequest, deleteRoomRequest, fetchRooms, updateRoomRequest } from '../../features/rooms/api';
 import { RoomFormDialog } from '../../features/rooms/RoomFormDialog';
 import { getApiErrorMessage } from '../../lib/errorMessage';
@@ -73,8 +73,8 @@ export function AdminRoomsPage() {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ py: 6 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+    <PageContainer maxWidth="md">
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Typography variant="h4">{t('rooms.title')}</Typography>
         <Button startIcon={<AddIcon />} variant="contained" onClick={() => setFormRoom(null)}>
           {t('rooms.addRoom')}
@@ -82,11 +82,13 @@ export function AdminRoomsPage() {
       </Box>
 
       {!isLoading && rooms.length === 0 && (
-        <Typography color="text.secondary">{t('rooms.empty')}</Typography>
+        <Typography color="text.secondary" align="center" sx={{ py: 6 }}>
+          {t('rooms.empty')}
+        </Typography>
       )}
 
       {rooms.length > 0 && (
-        <TableContainer component={Paper}>
+        <TableContainer component={Paper} elevation={2} sx={{ p: 1 }}>
           <Table>
             <TableHead>
               <TableRow>
@@ -131,6 +133,6 @@ export function AdminRoomsPage() {
         onConfirm={handleDeleteConfirm}
         onCancel={() => setRoomPendingDelete(null)}
       />
-    </Container>
+    </PageContainer>
   );
 }

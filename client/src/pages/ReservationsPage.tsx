@@ -11,15 +11,15 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
-import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { DesktopDatePicker as DatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 import dayjs, { type Dayjs } from 'dayjs';
 import { useTranslation } from 'react-i18next';
 import type { Reservation } from '@shared/schemas/reservation.schema';
 import type { Room } from '@shared/schemas/room.schema';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { useErrorModal } from '../components/ErrorModalProvider';
+import { PageContainer } from '../components/PageContainer';
 import { deleteReservationRequest, fetchReservations } from '../features/reservations/api';
 import { fetchRooms } from '../features/rooms/api';
 import { getApiErrorMessage } from '../lib/errorMessage';
@@ -73,12 +73,12 @@ export function ReservationsPage() {
   };
 
   return (
-    <Container maxWidth="md" sx={{ py: 6 }}>
-      <Typography variant="h4" gutterBottom>
+    <PageContainer maxWidth="md">
+      <Typography variant="h4" align="center" gutterBottom>
         {t('nav.reservations')}
       </Typography>
 
-      <Stack direction="row" spacing={2} sx={{ mb: 3, mt: 2 }}>
+      <Stack direction="row" spacing={2} justifyContent="center" sx={{ mb: 4, mt: 3 }}>
         <TextField
           select
           label={t('rooms.title')}
@@ -102,11 +102,13 @@ export function ReservationsPage() {
       </Stack>
 
       {reservations.length === 0 && (
-        <Typography color="text.secondary">{t('reservations.empty')}</Typography>
+        <Typography color="text.secondary" align="center" sx={{ py: 6 }}>
+          {t('reservations.empty')}
+        </Typography>
       )}
 
       {reservations.length > 0 && (
-        <TableContainer component={Paper}>
+        <TableContainer component={Paper} elevation={2} sx={{ p: 1 }}>
           <Table>
             <TableHead>
               <TableRow>
@@ -150,6 +152,6 @@ export function ReservationsPage() {
         onConfirm={handleCancelConfirm}
         onCancel={() => setPendingCancel(null)}
       />
-    </Container>
+    </PageContainer>
   );
 }

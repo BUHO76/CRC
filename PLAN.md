@@ -205,3 +205,8 @@ CRC/
 - [ ] Frontend component tests
 - [ ] Manual pass: overlap edge cases (adjacent times, same start/end) and operating-hours edge cases (starts before 09:00, ends after 17:00, exactly 09:00–17:00)
 - [ ] README updated with setup + run instructions
+- [x] UI polish pass (pulled forward, requested mid-Phase-3 testing):
+  - Navbar (`components/Navbar.tsx`) — real nav links (Reserve/Reservations/Admin) with active-route highlighting, replacing the title-only Phase-0 AppBar
+  - Dark mode — `theme/ColorModeProvider.tsx` (light/dark palettes, localStorage-persisted, defaults to OS `prefers-color-scheme`), toggle in the navbar. Also added a `color-scheme` meta tag to `index.html` — the likely real fix for the reported modal-contrast issue, since browsers auto-invert colors on pages that don't declare dark-mode support
+  - Desktop-forced date/time pickers (`DesktopDatePicker`/`DesktopTimePicker`) — the responsive pickers were silently falling back to the read-only Mobile variant, which doesn't accept keyboard input
+  - `components/PageContainer.tsx` — shared layout wrapper (consistent padding, optional vertical centering) applied to all four pages

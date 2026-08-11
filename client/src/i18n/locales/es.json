@@ -4,7 +4,8 @@
   },
   "common": {
     "ok": "Aceptar",
-    "errorTitle": "Algo salió mal"
+    "errorTitle": "Algo salió mal",
+    "toggleTheme": "Cambiar modo oscuro"
   },
   "nav": {
     "reserve": "Reservar",

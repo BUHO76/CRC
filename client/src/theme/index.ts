@@ -1,16 +1,20 @@
-import { createTheme } from '@mui/material/styles';
+import { createTheme, type Theme } from '@mui/material/styles';
 
-export const theme = createTheme({
-  palette: {
-    mode: 'light',
-    primary: {
-      main: '#2f5d62',
+export type ColorMode = 'light' | 'dark';
+
+export function getTheme(mode: ColorMode): Theme {
+  return createTheme({
+    palette: {
+      mode,
+      primary: {
+        main: mode === 'dark' ? '#6fb6bb' : '#2f5d62',
+      },
+      secondary: {
+        main: mode === 'dark' ? '#f2b84c' : '#d98e04',
+      },
     },
-    secondary: {
-      main: '#d98e04',
+    shape: {
+      borderRadius: 8,
     },
-  },
-  shape: {
-    borderRadius: 8,
-  },
-});
+  });
+}

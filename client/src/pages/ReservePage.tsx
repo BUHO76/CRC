@@ -1,19 +1,20 @@
 import { useEffect, useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Container from '@mui/material/Container';
 import MenuItem from '@mui/material/MenuItem';
+import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import { DesktopDatePicker as DatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
+import { DesktopTimePicker as TimePicker } from '@mui/x-date-pickers/DesktopTimePicker';
 import dayjs, { type Dayjs } from 'dayjs';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { OPERATING_HOURS } from '@shared/schemas/reservation.schema';
 import type { Room } from '@shared/schemas/room.schema';
 import { hasOverlap } from '@shared/utils/overlap';
+import { PageContainer } from '../components/PageContainer';
 import { useErrorModal } from '../components/ErrorModalProvider';
 import { createReservationRequest, fetchReservations } from '../features/reservations/api';
 import { validateReservationInput } from '../features/reservations/validation';
@@ -91,67 +92,69 @@ export function ReservePage() {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ py: 6 }}>
-      <Typography variant="h4" gutterBottom>
-        {t('nav.reserve')}
-      </Typography>
-      <Stack spacing={3} sx={{ mt: 2 }}>
-        <TextField
-          select
-          label={t('rooms.title')}
-          value={roomNumber}
-          onChange={(e) => setRoomNumber(e.target.value)}
-          error={Boolean(errors.roomNumber)}
-          helperText={errors.roomNumber}
-        >
-          {rooms.map((room) => (
-            <MenuItem key={room._id} value={room.number}>
-              {room.number} ({t('rooms.capacity')}: {room.capacity})
-            </MenuItem>
-          ))}
-        </TextField>
+    <PageContainer center maxWidth="sm">
+      <Paper elevation={2} sx={{ p: { xs: 3, sm: 5 }, width: '100%' }}>
+        <Typography variant="h4" align="center" gutterBottom>
+          {t('nav.reserve')}
+        </Typography>
+        <Stack spacing={3} sx={{ mt: 2 }}>
+          <TextField
+            select
+            label={t('rooms.title')}
+            value={roomNumber}
+            onChange={(e) => setRoomNumber(e.target.value)}
+            error={Boolean(errors.roomNumber)}
+            helperText={errors.roomNumber}
+          >
+            {rooms.map((room) => (
+              <MenuItem key={room._id} value={room.number}>
+                {room.number} ({t('rooms.capacity')}: {room.capacity})
+              </MenuItem>
+            ))}
+          </TextField>
 
-        <TextField
-          label={t('reservations.reservedBy')}
-          value={reservedBy}
-          onChange={(e) => setReservedBy(e.target.value)}
-          error={Boolean(errors.reservedBy)}
-          helperText={errors.reservedBy}
-        />
-
-        <DatePicker
-          label={t('reservations.date')}
-          value={date}
-          onChange={setDate}
-          minDate={dayjs()}
-          slotProps={{ textField: { error: Boolean(errors.date), helperText: errors.date } }}
-        />
-
-        <Stack direction="row" spacing={2}>
-          <TimePicker
-            label={t('reservations.startTime')}
-            value={startTime}
-            onChange={setStartTime}
-            minTime={minTime}
-            maxTime={maxTime}
-            slotProps={{ textField: { error: Boolean(errors.startTime), helperText: errors.startTime } }}
+          <TextField
+            label={t('reservations.reservedBy')}
+            value={reservedBy}
+            onChange={(e) => setReservedBy(e.target.value)}
+            error={Boolean(errors.reservedBy)}
+            helperText={errors.reservedBy}
           />
-          <TimePicker
-            label={t('reservations.endTime')}
-            value={endTime}
-            onChange={setEndTime}
-            minTime={minTime}
-            maxTime={maxTime}
-            slotProps={{ textField: { error: Boolean(errors.endTime), helperText: errors.endTime } }}
+
+          <DatePicker
+            label={t('reservations.date')}
+            value={date}
+            onChange={setDate}
+            minDate={dayjs()}
+            slotProps={{ textField: { error: Boolean(errors.date), helperText: errors.date } }}
           />
+
+          <Stack direction="row" spacing={2}>
+            <TimePicker
+              label={t('reservations.startTime')}
+              value={startTime}
+              onChange={setStartTime}
+              minTime={minTime}
+              maxTime={maxTime}
+              slotProps={{ textField: { error: Boolean(errors.startTime), helperText: errors.startTime } }}
+            />
+            <TimePicker
+              label={t('reservations.endTime')}
+              value={endTime}
+              onChange={setEndTime}
+              minTime={minTime}
+              maxTime={maxTime}
+              slotProps={{ textField: { error: Boolean(errors.endTime), helperText: errors.endTime } }}
+            />
+          </Stack>
+
+          <Box textAlign="center">
+            <Button variant="contained" size="large" onClick={handleSubmit} disabled={isSubmitting}>
+              {t('reservations.submit')}
+            </Button>
+          </Box>
         </Stack>
-
-        <Box>
-          <Button variant="contained" onClick={handleSubmit} disabled={isSubmitting}>
-            {t('reservations.submit')}
-          </Button>
-        </Box>
-      </Stack>
-    </Container>
+      </Paper>
+    </PageContainer>
   );
 }

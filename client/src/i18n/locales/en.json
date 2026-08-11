@@ -4,7 +4,8 @@
   },
   "common": {
     "ok": "OK",
-    "errorTitle": "Something went wrong"
+    "errorTitle": "Something went wrong",
+    "toggleTheme": "Toggle dark mode"
   },
   "nav": {
     "reserve": "Reserve",
