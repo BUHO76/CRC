@@ -12,5 +12,30 @@
     "subtitle": "How would you like to continue?",
     "admin": "Continue as Admin",
     "user": "Continue as User"
+  },
+  "rooms": {
+    "title": "Rooms",
+    "number": "Room number",
+    "capacity": "Capacity",
+    "addRoom": "Add room",
+    "editRoom": "Edit room",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "empty": "No rooms yet. Add one to get started.",
+    "deleteConfirmTitle": "Delete room {{number}}?",
+    "deleteConfirmBody": "This can't be undone."
+  },
+  "validation": {
+    "room": {
+      "numberRequired": "Room number is required",
+      "capacityInvalid": "Capacity must be a positive whole number"
+    }
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "conflict": "A room with that number already exists.",
+    "notFound": "That item no longer exists."
   }
 }
