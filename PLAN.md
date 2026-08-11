@@ -1,0 +1,219 @@
+# PLAN.md — Conference Room Reservation System (CRC)
+
+Status legend: `[ ]` not started · `[~]` in progress · `[x]` done
+
+This file is the source of truth for scope and sequencing. Update the checklist
+as work lands — don't let it drift from reality.
+
+---
+
+## 1. Overview
+
+A small full-stack app for reserving conference rooms. No authentication —
+open access. Core rule: a room can never have two overlapping reservations.
+Overlap is checked on the frontend (so an invalid request never reaches the
+API) and re-checked on the backend (defense in depth, since the API must
+never trust the client alone).
+
+## 2. Decisions Log
+
+Captured from planning Q&A — treat these as settled unless revisited:
+
+| Topic | Decision |
+|---|---|
+| Auth | None. Fully open, no login, no roles enforced server-side. |
+| Landing page | `/` is a role **picker** (UI-only, no auth): "Admin" → room management, "User" → reservation flow. Both routes remain reachable from nav either way. |
+| Room management | Admin CRUD page (create/edit/delete rooms) **plus** an auto-seed on server start. |
+| Room fields | `number` (identifier) + `capacity`. No name/location field. |
+| Seed trigger | Automatic — backend checks on startup if the `rooms` collection is empty and seeds it if so. No manual script step required. |
+| Cancel flow | User cancels directly from the reservation list (filter → click Cancel). No confirmation code, no identity check. |
+| Language/tooling | TypeScript on both frontend and backend. |
+| i18n | react-i18next (or equivalent), Spanish + English. |
+| Validation | Zod on the frontend form; equivalent validation independently enforced on the backend. |
+| Error handling | Global modal component for surfacing errors (validation errors, API errors, overlap conflicts). Built as an MUI `Dialog`. |
+| Styling / components | Material UI (MUI) — forms, tables, buttons, dialogs all built from MUI components + `sx`/theme, not plain CSS. |
+| Package manager | npm |
+| MongoDB target | Local MongoDB instance (`mongodb://localhost:27017/crc` by default, overridable via `.env`) |
+| Project structure | Single repo, two workspaces — `/client` (React) and `/server` (Express) — see §9. |
+| Reservation date/time model | `date` (YYYY-MM-DD) + `startTime`/`endTime` (HH:mm, 24h), same-day only — no overnight/multi-day spans. |
+| Operating hours | Reservations only allowed within **09:00–17:00**. A stay past 17:00 isn't a single reservation — the user books a fresh reservation for the next day (same room if still free, or another one). |
+
+All decisions are now settled — no open items remain.
+
+### Scaffolding notes (Phase 0)
+
+- The installed TypeScript (v7) removed `baseUrl` and the `node10` moduleResolution mode — server `tsconfig.json` uses `module`/`moduleResolution: "node16"` and path-relative `paths` instead.
+- `ts-node-dev` crashes against this TypeScript version (its internal ts-node config API changed underneath it). Swapped the server's `dev` script to **tsx** (`tsx watch src/index.ts`) — esbuild-based, no ts-node dependency, more resilient to TS version bumps.
+- Local MongoDB installed via Homebrew: `brew tap mongodb/brew && brew install mongodb-community`, running as a service (`brew services start mongodb/brew/mongodb-community`).
+- **i18n pattern for validation (set in Phase 1, reuse in Phase 2):** shared Zod schemas (`/shared/schemas/*.ts`) stay message-agnostic — no hardcoded English strings. The frontend maps a failed field (`issue.path[0]`) to a translation key itself (see `client/src/features/rooms/validation.ts` + `validation.room.*` keys in `en.json`/`es.json`). Same approach: backend error responses carry a machine-readable `code` (`VALIDATION_ERROR`/`DUPLICATE`/`API_ERROR`/`INTERNAL_ERROR`) and status code; the frontend never renders raw backend message text, it maps status/code to a translated string (`client/src/lib/errorMessage.ts`).
+- `/shared` has its own minimal `package.json` (with `zod` as a dependency) so `import { z } from 'zod'` resolves correctly from files under `/shared` regardless of which workspace (client or server) is loading them.
+- **Docker is planned for later** (the app will be run by other people). This shaped the server build: `npm run build` bundles `src/index.ts` with **esbuild** into a single `dist/index.js` (inlining the `@shared` schema imports), instead of plain `tsc` emit. Plain `tsc` doesn't rewrite `@shared/*` path aliases in its output, and even if it did, the compiled server would still depend on `/shared` existing as a sibling directory at the right relative path inside the image. The esbuild bundle has no such dependency — a future Dockerfile just needs `COPY dist/index.js` + `node_modules` (kept external via `--packages=external`) + `node dist/index.js`. `tsc --noEmit` (via `npm run typecheck`) still runs as part of `npm run build` for type safety; it just doesn't emit.
+
+## 4. Data Models
+
+### Room
+```ts
+{
+  _id: ObjectId,
+  number: string,      // e.g. "101" — unique
+  capacity: number,    // seats
+  createdAt: Date,
+}
+```
+
+### Reservation
+```ts
+{
+  _id: ObjectId,
+  roomNumber: string,   // references Room.number
+  reservedBy: string,   // name of the person reserving
+  date: string,          // "YYYY-MM-DD"
+  startTime: string,     // "HH:mm"
+  endTime: string,       // "HH:mm", must be > startTime
+  createdAt: Date,
+}
+```
+
+## 5. Business Rules
+
+### 5.1 Operating hours (09:00–17:00)
+
+Every reservation's `startTime` and `endTime` must fall within `09:00`–`17:00`
+on a single `date`. There is no overnight/multi-day reservation — a booking
+that would need to continue past 17:00 is simply a *new* reservation for the
+next day (same room if still free, or a different one). Enforced via the
+Zod schema (`startTime >= "09:00"`, `endTime <= "17:00"`, `endTime > startTime`)
+on both frontend and backend.
+
+### 5.2 No Overlapping Reservations
+
+Two reservations for the **same `roomNumber`** and **same `date`** conflict
+if: `existing.startTime < new.endTime AND existing.endTime > new.startTime`.
+
+- **Frontend**: before submit, fetch existing reservations for the chosen
+  room + date (reuses the filter endpoint) and validate client-side. If a
+  conflict is found, show the error modal — the reservation request is
+  never sent.
+- **Backend**: on `POST /reservations`, independently re-run the same
+  overlap check against the DB inside the request before inserting. Reject
+  with `409 Conflict` if a conflict exists. This is the real source of
+  truth; the frontend check is a UX nicety, not the security boundary.
+
+## 6. API Endpoints
+
+All request bodies validated with Zod schemas (shared shape between
+frontend and backend where practical, e.g. a `/shared` schema folder).
+
+### Rooms
+- `GET /api/rooms` — list all rooms (used to populate the reservation form's room selector and the admin page)
+- `POST /api/rooms` — create a room `{ number, capacity }`
+- `PUT /api/rooms/:id` — update a room
+- `DELETE /api/rooms/:id` — delete a room
+
+### Reservations
+- `POST /api/reservations` — create a reservation `{ roomNumber, reservedBy, date, startTime, endTime }`. 400 on validation failure, 409 on overlap.
+- `GET /api/reservations?roomNumber=&date=` — filter reservations by room number and/or date (both optional; no params returns full list for the list view)
+- `DELETE /api/reservations/:id` — cancel a reservation
+
+## 7. Frontend Views / Routes
+
+- `/` — Landing / role picker ("Admin" / "User" buttons, no auth)
+- `/admin/rooms` — Room management (list, create, edit, delete)
+- `/reserve` — Reservation form (room dropdown, name, date, start/end time; Zod validation + overlap pre-check)
+- `/reservations` — List of reservations with filter by room number + date, Cancel action per row
+- Global: Error modal (MUI `Dialog`), mounted once, triggered via a shared error/toast context
+- Global: language switcher (EN/ES) in the MUI `AppBar`/nav
+- Component library: MUI (`@mui/material`, `@mui/icons-material`) for buttons, tables (reservation list), forms/inputs, dialogs. MUI X Date/Time Pickers (`@mui/x-date-pickers`) for the date + start/end time fields on the reservation form.
+
+## 8. i18n
+
+- Library: `react-i18next` for app copy (nav, labels, validation/error messages)
+- MUI's own locale text (`ptBR`/`esES`/`enUS` theme locales) applied to the theme so built-in component strings (date pickers, table pagination, etc.) follow the same language switch
+- Locale files: `/client/src/locales/en.json`, `/client/src/locales/es.json`
+- Cover: nav, form labels + validation messages, list/table headers, modal error text, empty states
+
+## 9. Project Structure (proposed)
+
+```
+CRC/
+├── PLAN.md
+├── README.md
+├── client/                # React + TS
+│   ├── src/
+│   │   ├── components/    # feature-organized (per coding-style rules)
+│   │   ├── pages/
+│   │   ├── locales/
+│   │   ├── hooks/
+│   │   ├── lib/            # api client, zod schemas
+│   │   └── theme/           # MUI theme + locale config
+│   └── package.json
+├── server/                 # Node + Express + TS
+│   ├── src/
+│   │   ├── routes/
+│   │   ├── models/          # Mongoose schemas
+│   │   ├── controllers/
+│   │   ├── validation/      # zod schemas
+│   │   ├── seed/             # auto-seed logic, run on startup
+│   │   └── app.ts
+│   └── package.json
+└── shared/                  # optional: zod schemas shared by client+server
+```
+
+## 10. Testing Strategy
+
+- **Backend**: Vitest/Jest + Supertest — unit tests for overlap logic, integration tests per endpoint (create/filter/cancel, including the 409 conflict path).
+- **Frontend**: Vitest/Jest + React Testing Library — form validation, overlap pre-check UX, list filtering, cancel flow, error modal.
+- **E2E** (stretch goal, confirm if wanted): Playwright — reserve → see it in list → cancel it, and the overlap-block path.
+
+## 11. Build Checklist
+
+### Phase 0 — Scaffolding
+- [x] Init `client` (Vite + React + TS), install MUI (`@mui/material`, `@emotion/react`, `@emotion/styled`, `@mui/icons-material`, `@mui/x-date-pickers`)
+- [x] Init `server` (Express + TS)
+- [x] Connect server to local MongoDB (`mongodb://localhost:27017/crc`, via `.env`) — MongoDB Community 8.3.7 installed + started via Homebrew (`brew services start mongodb/brew/mongodb-community`); connection verified end-to-end via `GET /api/health`
+- [x] Set up shared Zod schema location — `/shared/schemas`, aliased as `@shared/*` in both `client` and `server` tsconfigs (+ Vite alias)
+- [x] Set up base MUI theme + `react-i18next` scaffolding — `client/src/theme`, `client/src/i18n`, wired into `main.tsx`/`App.tsx`, EN/ES switch confirmed working
+
+### Phase 1 — Rooms
+- [x] Room model (Mongoose) — `server/src/models/Room.ts`, shared Zod schema in `shared/schemas/room.schema.ts`
+- [x] Room CRUD endpoints — `GET/POST/PUT/DELETE /api/rooms`, shared `errorHandler` middleware (`VALIDATION_ERROR` 400, `DUPLICATE` 409, `API_ERROR`/404, `INTERNAL_ERROR` 500)
+- [x] Auto-seed on server startup (seed if `rooms` is empty) — verified against an emptied collection
+- [x] Admin room management page (list/create/edit/delete) — MUI table + form dialog + confirm dialog, wired to the API, i18n'd (EN/ES); minimal router added (`/`, `/admin/rooms`, `/reserve` + `/reservations` as Phase-3 placeholders)
+
+### Phase 2 — Reservations core
+- [x] Reservation model (Mongoose) — `server/src/models/Reservation.ts`, compound index on `{roomNumber, date}`
+- [x] Zod schema enforcing 09:00–17:00 operating hours + `endTime > startTime` — `shared/schemas/reservation.schema.ts` (message-agnostic, translated keys in `en.json`/`es.json` under `validation.reservation.*`)
+- [x] Overlap-check utility (shared logic, unit tested first) — `shared/utils/overlap.ts` + `overlap.test.ts` (vitest, added as a `shared` devDependency)
+- [x] `POST /api/reservations` with backend overlap + operating-hours enforcement — throws `ApiError(409, ..., 'OVERLAP')` on conflict, distinct from room `DUPLICATE` (both 409); `ApiError` now carries a `code`
+- [x] `GET /api/reservations` filter by room number + date (both optional)
+- [x] `DELETE /api/reservations/:id`
+- [x] Seed data for reservations — `server/src/seed/reservations.seed.ts`, 5 sample bookings across the seeded rooms, auto-seeded on startup alongside rooms
+
+### Phase 3 — Frontend flows
+- [x] Landing / role picker page — `pages/LandingPage.tsx` (built in Phase 0/1 scaffolding, confirmed matches §2 decision)
+- [x] Reservation form with Zod validation + overlap pre-check — `pages/ReservePage.tsx`, MUI X Date/Time pickers clamped to 09:00–17:00, client fetches same-room/date reservations and runs the shared `hasOverlap` before ever calling `POST /api/reservations`
+- [x] Reservation list page with filters + cancel action — `pages/ReservationsPage.tsx`, filter by room + date, cancel via `ConfirmDialog`
+- [x] Global error modal wired to API/validation failures — `components/ErrorModalProvider.tsx` (context + single MUI `Dialog` mounted in `main.tsx`); `AdminRoomsPage` migrated off its Phase-1 local `Snackbar` onto this same provider
+
+### Phase 4 — i18n
+- [x] react-i18next setup — done in Phase 0 (`client/src/i18n`)
+- [x] EN + ES locale files — built incrementally across Phases 0–3 (`app`, `common`, `nav`, `landing`, `rooms`, `reservations`, `validation.*`, `errors.*`)
+- [x] Language switcher in nav — EN/ES buttons in the `AppBar` (Phase 0), applies across every page since it's in the shared `App.tsx` shell
+
+### Phase 5 — Testing & polish
+- [ ] Backend unit + integration tests
+- [ ] Frontend component tests
+- [ ] Manual pass: overlap edge cases (adjacent times, same start/end) and operating-hours edge cases (starts before 09:00, ends after 17:00, exactly 09:00–17:00)
+- [x] README updated with setup + run instructions — `README.md` (English) + `README.es.md` (Spanish), tech stack, business rules, Docker quick-start, local-dev path, API table
+- [x] Dockerized (pulled forward, requested mid-Phase-5):
+  - `server/Dockerfile` — multi-stage: build on `node:20` (glibc — esbuild's native binary is flaky on Alpine at build time), ship on `node:20-alpine` with prod-only deps + the bundled `dist/index.js`
+  - `client/Dockerfile` — multi-stage: `node:20` build (Vite), served from `nginx:alpine` with SPA fallback routing (`client/nginx.conf`) so client-side routes survive a refresh
+  - `docker-compose.yml` — `mongo` (healthcheck-gated so `server` doesn't race a not-yet-ready DB), `server`, `client`; `mongo-data` named volume for persistence across restarts
+  - Both Dockerfiles use build context `.` (repo root) since they need the sibling `/shared` directory — documented inline
+  - `.dockerignore` (root — the only one Docker actually reads, given the root build context)
+- [x] UI polish pass (pulled forward, requested mid-Phase-3 testing):
+  - Navbar (`components/Navbar.tsx`) — real nav links (Reserve/Reservations/Admin) with active-route highlighting, replacing the title-only Phase-0 AppBar
+  - Dark mode — `theme/ColorModeProvider.tsx` (light/dark palettes, localStorage-persisted, defaults to OS `prefers-color-scheme`), toggle in the navbar. Also added a `color-scheme` meta tag to `index.html` — the likely real fix for the reported modal-contrast issue, since browsers auto-invert colors on pages that don't declare dark-mode support
+  - Desktop-forced date/time pickers (`DesktopDatePicker`/`DesktopTimePicker`) — the responsive pickers were silently falling back to the read-only Mobile variant, which doesn't accept keyboard input
+  - `components/PageContainer.tsx` — shared layout wrapper (consistent padding, optional vertical centering) applied to all four pages
+  - Navbar's static "Admin" link replaced with an Admin/User role-switcher dropdown (`MenuItem` → `/admin/rooms` or `/reserve`), label reflects the current route

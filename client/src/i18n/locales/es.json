@@ -1,0 +1,70 @@
+{
+  "app": {
+    "title": "Reservas de Salas de Conferencia"
+  },
+  "common": {
+    "ok": "Aceptar",
+    "errorTitle": "Algo salió mal",
+    "toggleTheme": "Cambiar modo oscuro"
+  },
+  "nav": {
+    "reserve": "Reservar",
+    "reservations": "Reservas",
+    "admin": "Administrador",
+    "user": "Usuario"
+  },
+  "landing": {
+    "title": "Reservas de Salas de Conferencia",
+    "subtitle": "¿Cómo te gustaría continuar?",
+    "admin": "Continuar como Administrador",
+    "user": "Continuar como Usuario"
+  },
+  "rooms": {
+    "title": "Salas",
+    "number": "Número de sala",
+    "capacity": "Capacidad",
+    "addRoom": "Agregar sala",
+    "editRoom": "Editar sala",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "empty": "Aún no hay salas. Agrega una para comenzar.",
+    "deleteConfirmTitle": "¿Eliminar la sala {{number}}?",
+    "deleteConfirmBody": "Esta acción no se puede deshacer."
+  },
+  "reservations": {
+    "title": "Reservas",
+    "reservedBy": "Tu nombre",
+    "date": "Fecha",
+    "startTime": "Hora de inicio",
+    "endTime": "Hora de fin",
+    "time": "Horario",
+    "submit": "Reservar",
+    "allRooms": "Todas las salas",
+    "empty": "No se encontraron reservas.",
+    "cancel": "Cancelar reserva",
+    "cancelConfirmTitle": "¿Cancelar esta reserva?",
+    "cancelConfirmBody": "Esta acción no se puede deshacer.",
+    "success": "Reserva confirmada."
+  },
+  "validation": {
+    "room": {
+      "numberRequired": "El número de sala es obligatorio",
+      "capacityInvalid": "La capacidad debe ser un número entero positivo"
+    },
+    "reservation": {
+      "roomNumberRequired": "Selecciona una sala",
+      "reservedByRequired": "Tu nombre es obligatorio",
+      "dateInvalid": "Selecciona una fecha válida",
+      "startTimeInvalid": "La hora de inicio debe estar entre las 09:00 y las 17:00",
+      "endTimeInvalid": "La hora de fin debe estar entre las 09:00 y las 17:00, y después de la hora de inicio"
+    }
+  },
+  "errors": {
+    "generic": "Algo salió mal. Inténtalo de nuevo.",
+    "conflict": "Ya existe una sala con ese número.",
+    "notFound": "Ese elemento ya no existe.",
+    "reservationOverlap": "Esta sala ya está reservada en ese horario. Elige otro horario u otra sala."
+  }
+}
