@@ -190,15 +190,15 @@ CRC/
 - [x] Seed data for reservations — `server/src/seed/reservations.seed.ts`, 5 sample bookings across the seeded rooms, auto-seeded on startup alongside rooms
 
 ### Phase 3 — Frontend flows
-- [ ] Landing / role picker page
-- [ ] Reservation form with Zod validation + overlap pre-check
-- [ ] Reservation list page with filters + cancel action
-- [ ] Global error modal wired to API/validation failures
+- [x] Landing / role picker page — `pages/LandingPage.tsx` (built in Phase 0/1 scaffolding, confirmed matches §2 decision)
+- [x] Reservation form with Zod validation + overlap pre-check — `pages/ReservePage.tsx`, MUI X Date/Time pickers clamped to 09:00–17:00, client fetches same-room/date reservations and runs the shared `hasOverlap` before ever calling `POST /api/reservations`
+- [x] Reservation list page with filters + cancel action — `pages/ReservationsPage.tsx`, filter by room + date, cancel via `ConfirmDialog`
+- [x] Global error modal wired to API/validation failures — `components/ErrorModalProvider.tsx` (context + single MUI `Dialog` mounted in `main.tsx`); `AdminRoomsPage` migrated off its Phase-1 local `Snackbar` onto this same provider
 
 ### Phase 4 — i18n
-- [ ] react-i18next setup
-- [ ] EN + ES locale files
-- [ ] Language switcher in nav
+- [x] react-i18next setup — done in Phase 0 (`client/src/i18n`)
+- [x] EN + ES locale files — built incrementally across Phases 0–3 (`app`, `common`, `nav`, `landing`, `rooms`, `reservations`, `validation.*`, `errors.*`)
+- [x] Language switcher in nav — EN/ES buttons in the `AppBar` (Phase 0), applies across every page since it's in the shared `App.tsx` shell
 
 ### Phase 5 — Testing & polish
 - [ ] Backend unit + integration tests

@@ -2,6 +2,10 @@
   "app": {
     "title": "Reservas de Salas de Conferencia"
   },
+  "common": {
+    "ok": "Aceptar",
+    "errorTitle": "Algo salió mal"
+  },
   "nav": {
     "reserve": "Reservar",
     "reservations": "Reservas",
@@ -27,6 +31,21 @@
     "deleteConfirmTitle": "¿Eliminar la sala {{number}}?",
     "deleteConfirmBody": "Esta acción no se puede deshacer."
   },
+  "reservations": {
+    "title": "Reservas",
+    "reservedBy": "Tu nombre",
+    "date": "Fecha",
+    "startTime": "Hora de inicio",
+    "endTime": "Hora de fin",
+    "time": "Horario",
+    "submit": "Reservar",
+    "allRooms": "Todas las salas",
+    "empty": "No se encontraron reservas.",
+    "cancel": "Cancelar reserva",
+    "cancelConfirmTitle": "¿Cancelar esta reserva?",
+    "cancelConfirmBody": "Esta acción no se puede deshacer.",
+    "success": "Reserva confirmada."
+  },
   "validation": {
     "room": {
       "numberRequired": "El número de sala es obligatorio",
@@ -45,9 +64,5 @@
     "conflict": "Ya existe una sala con ese número.",
     "notFound": "Ese elemento ya no existe.",
     "reservationOverlap": "Esta sala ya está reservada en ese horario. Elige otro horario u otra sala."
-  },
-  "comingSoon": {
-    "title": "Próximamente",
-    "body": "Esta parte de la aplicación aún no se ha construido."
   }
 }

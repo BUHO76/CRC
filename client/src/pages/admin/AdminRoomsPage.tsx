@@ -2,13 +2,11 @@ import { useCallback, useEffect, useState } from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import IconButton from '@mui/material/IconButton';
 import Paper from '@mui/material/Paper';
-import Snackbar from '@mui/material/Snackbar';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -19,28 +17,29 @@ import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 import type { Room, RoomInput } from '@shared/schemas/room.schema';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
+import { useErrorModal } from '../../components/ErrorModalProvider';
 import { createRoomRequest, deleteRoomRequest, fetchRooms, updateRoomRequest } from '../../features/rooms/api';
 import { RoomFormDialog } from '../../features/rooms/RoomFormDialog';
 import { getApiErrorMessage } from '../../lib/errorMessage';
 
 export function AdminRoomsPage() {
   const { t } = useTranslation();
+  const { showError } = useErrorModal();
   const [rooms, setRooms] = useState<Room[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [formRoom, setFormRoom] = useState<Room | null | undefined>(undefined);
   const [roomPendingDelete, setRoomPendingDelete] = useState<Room | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const loadRooms = useCallback(async () => {
     setIsLoading(true);
     try {
       setRooms(await fetchRooms());
     } catch (err) {
-      setErrorMessage(getApiErrorMessage(err, t));
+      showError(getApiErrorMessage(err, t));
     } finally {
       setIsLoading(false);
     }
-  }, [t]);
+  }, [t, showError]);
 
   useEffect(() => {
     loadRooms();
@@ -56,7 +55,7 @@ export function AdminRoomsPage() {
       setFormRoom(undefined);
       await loadRooms();
     } catch (err) {
-      setErrorMessage(getApiErrorMessage(err, t));
+      showError(getApiErrorMessage(err, t));
     }
   };
 
@@ -69,7 +68,7 @@ export function AdminRoomsPage() {
       setRoomPendingDelete(null);
       await loadRooms();
     } catch (err) {
-      setErrorMessage(getApiErrorMessage(err, t));
+      showError(getApiErrorMessage(err, t));
     }
   };
 
@@ -132,12 +131,6 @@ export function AdminRoomsPage() {
         onConfirm={handleDeleteConfirm}
         onCancel={() => setRoomPendingDelete(null)}
       />
-
-      <Snackbar open={Boolean(errorMessage)} autoHideDuration={5000} onClose={() => setErrorMessage(null)}>
-        <Alert severity="error" onClose={() => setErrorMessage(null)} sx={{ width: '100%' }}>
-          {errorMessage}
-        </Alert>
-      </Snackbar>
     </Container>
   );
 }

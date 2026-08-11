@@ -6,8 +6,9 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 import { Route, Routes } from 'react-router-dom';
-import { ComingSoonPage } from './pages/ComingSoonPage';
 import { LandingPage } from './pages/LandingPage';
+import { ReservePage } from './pages/ReservePage';
+import { ReservationsPage } from './pages/ReservationsPage';
 import { AdminRoomsPage } from './pages/admin/AdminRoomsPage';
 
 function App() {
@@ -42,8 +43,8 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/admin/rooms" element={<AdminRoomsPage />} />
-        <Route path="/reserve" element={<ComingSoonPage />} />
-        <Route path="/reservations" element={<ComingSoonPage />} />
+        <Route path="/reserve" element={<ReservePage />} />
+        <Route path="/reservations" element={<ReservationsPage />} />
       </Routes>
     </Box>
   );

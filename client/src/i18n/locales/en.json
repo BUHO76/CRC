@@ -2,6 +2,10 @@
   "app": {
     "title": "Conference Room Reservations"
   },
+  "common": {
+    "ok": "OK",
+    "errorTitle": "Something went wrong"
+  },
   "nav": {
     "reserve": "Reserve",
     "reservations": "Reservations",
@@ -27,6 +31,21 @@
     "deleteConfirmTitle": "Delete room {{number}}?",
     "deleteConfirmBody": "This can't be undone."
   },
+  "reservations": {
+    "title": "Reservations",
+    "reservedBy": "Your name",
+    "date": "Date",
+    "startTime": "Start time",
+    "endTime": "End time",
+    "time": "Time",
+    "submit": "Reserve",
+    "allRooms": "All rooms",
+    "empty": "No reservations found.",
+    "cancel": "Cancel reservation",
+    "cancelConfirmTitle": "Cancel this reservation?",
+    "cancelConfirmBody": "This can't be undone.",
+    "success": "Reservation confirmed."
+  },
   "validation": {
     "room": {
       "numberRequired": "Room number is required",
@@ -45,9 +64,5 @@
     "conflict": "A room with that number already exists.",
     "notFound": "That item no longer exists.",
     "reservationOverlap": "This room is already booked for that time. Please choose another time or room."
-  },
-  "comingSoon": {
-    "title": "Coming soon",
-    "body": "This part of the app hasn't been built yet."
   }
 }
