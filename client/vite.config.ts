@@ -10,4 +10,9 @@ export default defineConfig({
       '@shared': fileURLToPath(new URL('../shared', import.meta.url)),
     },
   },
+  server: {
+    fs: {
+      allow: ['..'],
+    },
+  },
 })

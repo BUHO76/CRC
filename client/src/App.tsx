@@ -1,11 +1,14 @@
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
+import { Route, Routes } from 'react-router-dom';
+import { ComingSoonPage } from './pages/ComingSoonPage';
+import { LandingPage } from './pages/LandingPage';
+import { AdminRoomsPage } from './pages/admin/AdminRoomsPage';
 
 function App() {
   const { t, i18n } = useTranslation();
@@ -36,14 +39,12 @@ function App() {
         </Toolbar>
       </AppBar>
 
-      <Container maxWidth="sm" sx={{ pt: 8 }}>
-        <Typography variant="h4" gutterBottom>
-          {t('landing.title')}
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          {t('landing.subtitle')}
-        </Typography>
-      </Container>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/admin/rooms" element={<AdminRoomsPage />} />
+        <Route path="/reserve" element={<ComingSoonPage />} />
+        <Route path="/reservations" element={<ComingSoonPage />} />
+      </Routes>
     </Box>
   );
 }

@@ -37,5 +37,9 @@
     "generic": "Something went wrong. Please try again.",
     "conflict": "A room with that number already exists.",
     "notFound": "That item no longer exists."
+  },
+  "comingSoon": {
+    "title": "Coming soon",
+    "body": "This part of the app hasn't been built yet."
   }
 }

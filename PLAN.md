@@ -173,10 +173,10 @@ CRC/
 - [x] Set up base MUI theme + `react-i18next` scaffolding — `client/src/theme`, `client/src/i18n`, wired into `main.tsx`/`App.tsx`, EN/ES switch confirmed working
 
 ### Phase 1 — Rooms
-- [ ] Room model (Mongoose)
-- [ ] Room CRUD endpoints
-- [ ] Auto-seed on server startup (seed if `rooms` is empty)
-- [ ] Admin room management page (list/create/edit/delete)
+- [x] Room model (Mongoose) — `server/src/models/Room.ts`, shared Zod schema in `shared/schemas/room.schema.ts`
+- [x] Room CRUD endpoints — `GET/POST/PUT/DELETE /api/rooms`, shared `errorHandler` middleware (`VALIDATION_ERROR` 400, `DUPLICATE` 409, `API_ERROR`/404, `INTERNAL_ERROR` 500)
+- [x] Auto-seed on server startup (seed if `rooms` is empty) — verified against an emptied collection
+- [x] Admin room management page (list/create/edit/delete) — MUI table + form dialog + confirm dialog, wired to the API, i18n'd (EN/ES); minimal router added (`/`, `/admin/rooms`, `/reserve` + `/reservations` as Phase-3 placeholders)
 
 ### Phase 2 — Reservations core
 - [ ] Reservation model (Mongoose)
