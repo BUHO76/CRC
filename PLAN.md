@@ -40,6 +40,13 @@ Captured from planning Q&A — treat these as settled unless revisited:
 
 All decisions are now settled — no open items remain.
 
+### Scaffolding notes (Phase 0)
+
+- The installed TypeScript (v7) removed `baseUrl` and the `node10` moduleResolution mode — server `tsconfig.json` uses `module`/`moduleResolution: "node16"` and path-relative `paths` instead.
+- `ts-node-dev` crashes against this TypeScript version (its internal ts-node config API changed underneath it). Swapped the server's `dev` script to **tsx** (`tsx watch src/index.ts`) — esbuild-based, no ts-node dependency, more resilient to TS version bumps.
+- Local MongoDB installed via Homebrew: `brew tap mongodb/brew && brew install mongodb-community`, running as a service (`brew services start mongodb/brew/mongodb-community`).
+- **Docker is planned for later** (the app will be run by other people). This shaped the server build: `npm run build` bundles `src/index.ts` with **esbuild** into a single `dist/index.js` (inlining the `@shared` schema imports), instead of plain `tsc` emit. Plain `tsc` doesn't rewrite `@shared/*` path aliases in its output, and even if it did, the compiled server would still depend on `/shared` existing as a sibling directory at the right relative path inside the image. The esbuild bundle has no such dependency — a future Dockerfile just needs `COPY dist/index.js` + `node_modules` (kept external via `--packages=external`) + `node dist/index.js`. `tsc --noEmit` (via `npm run typecheck`) still runs as part of `npm run build` for type safety; it just doesn't emit.
+
 ## 4. Data Models
 
 ### Room
@@ -159,11 +166,11 @@ CRC/
 ## 11. Build Checklist
 
 ### Phase 0 — Scaffolding
-- [ ] Init `client` (Vite + React + TS), install MUI (`@mui/material`, `@emotion/react`, `@emotion/styled`, `@mui/icons-material`, `@mui/x-date-pickers`)
-- [ ] Init `server` (Express + TS)
-- [ ] Connect server to local MongoDB (`mongodb://localhost:27017/crc`, via `.env`)
-- [ ] Set up shared Zod schema location
-- [ ] Set up base MUI theme + `react-i18next` scaffolding
+- [x] Init `client` (Vite + React + TS), install MUI (`@mui/material`, `@emotion/react`, `@emotion/styled`, `@mui/icons-material`, `@mui/x-date-pickers`)
+- [x] Init `server` (Express + TS)
+- [x] Connect server to local MongoDB (`mongodb://localhost:27017/crc`, via `.env`) — MongoDB Community 8.3.7 installed + started via Homebrew (`brew services start mongodb/brew/mongodb-community`); connection verified end-to-end via `GET /api/health`
+- [x] Set up shared Zod schema location — `/shared/schemas`, aliased as `@shared/*` in both `client` and `server` tsconfigs (+ Vite alias)
+- [x] Set up base MUI theme + `react-i18next` scaffolding — `client/src/theme`, `client/src/i18n`, wired into `main.tsx`/`App.tsx`, EN/ES switch confirmed working
 
 ### Phase 1 — Rooms
 - [ ] Room model (Mongoose)
